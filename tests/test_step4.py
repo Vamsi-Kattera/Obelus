@@ -149,3 +149,25 @@ def _fake_many(n=40):
                 "answers": [{"text": text[s:e], "answer_start": s}] if has else []}]
         data.append({"title": f"C{i}", "paragraphs": [{"context": text, "qas": qas}]})
     return {"data": data}
+
+
+def test_daily_quota_is_not_retried():
+    from llm import DailyQuotaError, call_with_retries
+    calls = {"n": 0}
+    def out_of_quota():
+        calls["n"] += 1
+        raise RuntimeError("429 RESOURCE_EXHAUSTED GenerateRequestsPerDayPerProjectPerModel-FreeTier")
+    with pytest.raises(DailyQuotaError):
+        call_with_retries(out_of_quota, sleep=lambda s: None)
+    assert calls["n"] == 1
+
+
+def test_per_minute_429_is_still_retried():
+    from llm import call_with_retries
+    calls = {"n": 0}
+    def busy():
+        calls["n"] += 1
+        if calls["n"] < 2:
+            raise RuntimeError("429 RESOURCE_EXHAUSTED requests per minute")
+        return "ok"
+    assert call_with_retries(busy, sleep=lambda s: None) == "ok"

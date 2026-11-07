@@ -55,7 +55,7 @@ def format_table(results, split="dev"):
 
 def main():
     from data import load_contracts, split_contracts
-    from llm import cached, gemini_json
+    from llm import DailyQuotaError, cached, gemini_json
 
     ap = argparse.ArgumentParser()
     ap.add_argument("--clauses", nargs="+", default=DEFAULT_CLAUSES)
@@ -76,10 +76,15 @@ def main():
     results = {}
     for clause in args.clauses:
         print(f"Running {clause} ...", flush=True)
-        results[clause] = evaluate_clause(clause, parts, llm, args.split, args.top_k)
+        try:
+            results[clause] = evaluate_clause(clause, parts, llm, args.split, args.top_k)
+        except DailyQuotaError as exc:
+            print(f"\nStopped at '{clause}': {exc}")
+            break
         Path("eval").mkdir(exist_ok=True)
         Path("eval/results.md").write_text(format_table(results, args.split), encoding="utf-8")
-    print("\n" + format_table(results, args.split))
+    if results:
+        print("\n" + format_table(results, args.split))
     print(f"\nNew API calls: {calls['n']}. Table saved to eval\\results.md")
 
 

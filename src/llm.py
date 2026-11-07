@@ -17,12 +17,25 @@ API_VERSION = os.environ.get("CLAUSELENS_API_VERSION", "v1beta")
 RETRY_WORDS = ("429", "500", "503", "unavailable", "overloaded", "resource_exhausted", "timeout")
 
 
+class DailyQuotaError(RuntimeError):
+    """The free-tier daily request limit is used up. Waiting a few seconds will not help."""
+
+
+def is_daily_quota(message):
+    m = message.lower()
+    return "perday" in m or "per day" in m or "requests per day" in m
+
+
 def call_with_retries(fn, attempts=5, base=2.0, sleep=time.sleep):
     """Call fn(); on a temporary error wait base*2^n seconds (plus jitter) and try again."""
     for n in range(attempts):
         try:
             return fn()
         except Exception as exc:                      # noqa: BLE001
+            if is_daily_quota(str(exc)):
+                raise DailyQuotaError(
+                    "Daily request limit reached for this model. Cached answers are kept; "
+                    "rerun after the quota resets.") from exc
             temporary = any(w in str(exc).lower() for w in RETRY_WORDS)
             if not temporary or n == attempts - 1:
                 raise
