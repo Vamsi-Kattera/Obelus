@@ -4,9 +4,12 @@ The key is read from the GEMINI_API_KEY environment variable. Never paste it int
 Set it in your own terminal for this session only:
     $env:GEMINI_API_KEY = "your-key"
 """
+import hashlib
+import json
 import os
 import random
 import time
+from pathlib import Path
 
 # Override without editing code:  $env:CLAUSELENS_MODEL = "model-name"
 MODEL = os.environ.get("CLAUSELENS_MODEL", "gemini-flash-lite-latest")
@@ -46,3 +49,26 @@ def gemini_json(prompt, schema, model=MODEL):
         return schema.model_validate_json(resp.text).model_dump()
 
     return call_with_retries(once)
+
+
+def cached(fn, path="eval/llm_cache.json"):
+    """Wrap an LLM function so identical questions are answered from disk, not the API.
+    The key covers the model, the schema name and the full prompt, so changing the
+    prompt (or the model) automatically asks the model again."""
+    file = Path(path)
+    try:
+        store = json.loads(file.read_text(encoding="utf-8")) if file.exists() else {}
+    except (OSError, ValueError):
+        store = {}
+
+    def wrapper(prompt, schema):
+        key = hashlib.sha256(f"{MODEL}|{schema.__name__}|{prompt}".encode("utf-8")).hexdigest()
+        if key in store:
+            return store[key]
+        result = fn(prompt, schema)
+        store[key] = result
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.write_text(json.dumps(store), encoding="utf-8")
+        return result
+
+    return wrapper

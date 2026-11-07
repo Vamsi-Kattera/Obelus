@@ -92,3 +92,35 @@ def test_false_positive_finder_skips_labelled_contracts():
     assert [t for t, _ in out] == ["no"] and "liability" in out[0][1][0]
     saying_no = lambda p, s: {"found": False, "quotes": []}
     assert find_false_positives([unlabelled], "Cap On Liability", saying_no) == []
+
+
+def test_cache_avoids_second_api_call(tmp_path):
+    from llm import cached
+    from extract import ClauseAnswer
+    calls = {"n": 0}
+    def fake(prompt, schema):
+        calls["n"] += 1
+        return {"found": True, "quotes": ["q"]}
+    path = tmp_path / "c.json"
+    wrapped = cached(fake, path)
+    assert wrapped("hello", ClauseAnswer) == {"found": True, "quotes": ["q"]}
+    assert wrapped("hello", ClauseAnswer)["found"] is True
+    assert calls["n"] == 1                      # second identical question came from the cache
+    wrapped("different prompt", ClauseAnswer)
+    assert calls["n"] == 2                      # new prompt asks the model again
+    again = cached(fake, path)                  # a fresh wrapper reloads the file from disk
+    again("hello", ClauseAnswer)
+    assert calls["n"] == 2
+
+
+def test_span_stats_classifies_overlap():
+    from data import Contract
+    from evaluate import Prediction
+    from span_stats import span_stats, summarise
+    c = Contract("a", "x" * 1000, {"K": [(100, 300)]})
+    good = span_stats([c], "K", lambda t, k: Prediction(True, [(100, 300)]))
+    part = span_stats([c], "K", lambda t, k: Prediction(True, [(100, 150)]))
+    none = span_stats([c], "K", lambda t, k: Prediction(True, [(500, 600)]))
+    skip = span_stats([c], "K", lambda t, k: Prediction(False))
+    assert summarise(good)["good"] == 1 and summarise(part)["partial"] == 1
+    assert summarise(none)["no_overlap"] == 1 and skip == []
