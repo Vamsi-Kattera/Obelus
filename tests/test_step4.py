@@ -124,3 +124,28 @@ def test_span_stats_classifies_overlap():
     skip = span_stats([c], "K", lambda t, k: Prediction(False))
     assert summarise(good)["good"] == 1 and summarise(part)["partial"] == 1
     assert summarise(none)["no_overlap"] == 1 and skip == []
+
+
+def test_run_all_table_and_scoring():
+    from data import parse_cuad, split_contracts
+    from run_all import METHODS, evaluate_clause, format_table
+    contracts, _ = parse_cuad(_fake_many())
+    parts = split_contracts(contracts)
+    llm = lambda p, s: {"found": True, "quotes": [QUOTE]}
+    r = evaluate_clause("Cap On Liability", parts, llm)
+    assert set(r["metrics"]) == set(METHODS) and r["n_pos"] + r["n_neg"] == len(parts["dev"])
+    table = format_table({"Cap On Liability": r})
+    assert "| Cap On Liability |" in table and table.count("\n") >= 5
+
+
+def _fake_many(n=40):
+    data = []
+    for i in range(n):
+        filler = "The parties agree to cooperate on deliveries and reports. " * 30
+        text = filler + QUOTE + " " + filler
+        s, e = locate(QUOTE, text)
+        has = i % 2 == 0
+        qas = [{"id": f"C{i}__Cap On Liability",
+                "answers": [{"text": text[s:e], "answer_start": s}] if has else []}]
+        data.append({"title": f"C{i}", "paragraphs": [{"context": text, "qas": qas}]})
+    return {"data": data}

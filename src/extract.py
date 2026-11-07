@@ -13,12 +13,17 @@ DESCRIPTIONS = {
                          "that can be recovered (for example 'liability shall not exceed the fees paid'); a time limit "
                          "for bringing claims; and an exclusion of certain kinds of damages, such as indirect, "
                          "consequential, special, incidental or punitive damages or lost profits"),
-    "Governing Law": "which country's or state's law governs the agreement",
-    "Termination For Convenience": "a right to end the agreement at any time without needing a reason, usually on notice",
-    "Audit Rights": "a right to inspect or audit the other party's books, records or facilities",
-    "Anti-Assignment": "a rule that a party cannot assign or transfer the agreement without consent",
-    "Non-Compete": "a restriction stopping a party from competing with the other party",
-    "Exclusivity": "an exclusive right, or a promise not to deal with others",
+    "Governing Law": "which country's or state's law governs the interpretation of the agreement",
+    "Termination For Convenience": ("a right for a party to end the agreement without needing a reason, "
+                                    "usually by giving notice and waiting for a notice period to pass"),
+    "Audit Rights": ("a right for a party to audit or inspect the other party's books, records or "
+                     "physical locations to check compliance with the contract"),
+    "Anti-Assignment": ("a requirement of consent or notice before the contract is assigned or transferred "
+                        "to a third party, including limits on assignment by merger or change of control"),
+    "Non-Compete": ("a restriction on a party's ability to compete with the other party, or to operate in "
+                    "a certain geography, business or technology sector"),
+    "Exclusivity": ("an exclusive dealing commitment: buying all requirements from one party, or a ban on "
+                    "selling, licensing or working with third parties, during or after the contract"),
 }
 
 
