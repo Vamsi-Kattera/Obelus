@@ -13,5 +13,5 @@ RUN useradd --create-home appuser
 USER appuser
 
 EXPOSE 8080
-# Pass the key at run time:  docker run -e GEMINI_API_KEY=... -p 8080:8080 clauselens
+# Pass the key at run time:  docker run -e GEMINI_API_KEY=... -p 8080:8080 obelus
 CMD ["uvicorn", "api:app", "--app-dir", "src", "--host", "0.0.0.0", "--port", "8080"]

@@ -1,4 +1,4 @@
-"""ClauseLens service logic: no web framework in here, so it is easy to test.
+"""Obelus service logic: no web framework in here, so it is easy to test.
 
 analyze() takes a contract's text and a list of clause names and returns, for each clause,
 whether it was found and the exact passages (with character positions in the original text).
@@ -18,7 +18,7 @@ MAX_CLAUSES = 7
 # Clauses whose accuracy was measured on the CUAD dev split (see eval/results.md).
 EVALUATED = ["Cap On Liability", "Termination For Convenience", "Audit Rights", "Anti-Assignment"]
 SUPPORTED = list(DESCRIPTIONS)
-DISCLAIMER = ("ClauseLens highlights passages for a human reviewer. It is not legal advice and can miss "
+DISCLAIMER = ("Obelus highlights passages for a human reviewer. It is not legal advice and can miss "
               "clauses or flag the wrong text.")
 
 

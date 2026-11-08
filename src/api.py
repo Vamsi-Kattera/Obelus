@@ -1,4 +1,4 @@
-"""ClauseLens HTTP API.
+"""Obelus HTTP API.
 
 Run locally from C:\\dev\\clauselens:
     uvicorn api:app --app-dir src --port 8080
@@ -18,13 +18,13 @@ from fastapi import Depends, FastAPI, Header, HTTPException
 from llm import MODEL, DailyQuotaError, gemini_json
 from service import DISCLAIMER, EVALUATED, SUPPORTED, AnalyzeRequest, AnalyzeResponse, UnknownClause, analyze
 
-log = logging.getLogger("clauselens")
+log = logging.getLogger("obelus")
 logging.basicConfig(level=logging.INFO, format='{"time":"%(asctime)s","level":"%(levelname)s","msg":"%(message)s"}')
 
 if not os.environ.get("GEMINI_API_KEY"):
     log.warning("GEMINI_API_KEY is not set: /analyze will fail until it is provided")
 
-app = FastAPI(title="ClauseLens", version="0.1.0", description=DISCLAIMER)
+app = FastAPI(title="Obelus", version="0.1.0", description=DISCLAIMER)
 
 
 def get_llm():
