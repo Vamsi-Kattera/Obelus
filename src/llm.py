@@ -12,8 +12,13 @@ import time
 from pathlib import Path
 
 # Override without editing code:  $env:CLAUSELENS_MODEL = "model-name"
-MODEL = os.environ.get("CLAUSELENS_MODEL", "gemini-flash-lite-latest")
-API_VERSION = os.environ.get("CLAUSELENS_API_VERSION", "v1beta")
+def env_or_default(name, default):
+    """Read an environment variable, treating an empty value the same as 'not set'."""
+    return (os.environ.get(name) or "").strip() or default
+
+
+MODEL = env_or_default("CLAUSELENS_MODEL", "gemini-3.5-flash-lite")
+API_VERSION = env_or_default("CLAUSELENS_API_VERSION", "v1beta")
 RETRY_WORDS = ("429", "500", "503", "unavailable", "overloaded", "resource_exhausted", "timeout")
 
 

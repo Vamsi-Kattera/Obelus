@@ -171,3 +171,15 @@ def test_per_minute_429_is_still_retried():
             raise RuntimeError("429 RESOURCE_EXHAUSTED requests per minute")
         return "ok"
     assert call_with_retries(busy, sleep=lambda s: None) == "ok"
+
+
+def test_empty_env_var_falls_back_to_default(monkeypatch):
+    from llm import env_or_default
+    monkeypatch.setenv("CLAUSELENS_X", "")
+    assert env_or_default("CLAUSELENS_X", "fallback") == "fallback"
+    monkeypatch.setenv("CLAUSELENS_X", "  ")
+    assert env_or_default("CLAUSELENS_X", "fallback") == "fallback"
+    monkeypatch.setenv("CLAUSELENS_X", "real-model")
+    assert env_or_default("CLAUSELENS_X", "fallback") == "real-model"
+    monkeypatch.delenv("CLAUSELENS_X")
+    assert env_or_default("CLAUSELENS_X", "fallback") == "fallback"

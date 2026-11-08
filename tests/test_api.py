@@ -26,7 +26,8 @@ def client():
 
 
 def test_health(client):
-    assert client.get("/health").json() == {"status": "ok"}
+    body = client.get("/health").json()
+    assert body["status"] == "ok" and "model" in body and isinstance(body["key_configured"], bool)
 
 
 def test_clauses_lists_measured_and_supported(client):
