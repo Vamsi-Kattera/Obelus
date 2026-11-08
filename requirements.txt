@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+pydantic
+rank-bm25
+google-genai

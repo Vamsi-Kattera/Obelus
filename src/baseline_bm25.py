@@ -11,7 +11,6 @@ from math import comb
 from rank_bm25 import BM25Okapi
 
 from chunk import make_chunks, overlaps
-from data import load_contracts, split_contracts
 
 # Hand-written search words per clause. Unknown clauses fall back to the clause name.
 QUERIES = {
@@ -76,6 +75,8 @@ def evaluate(contracts, clause, ks=(1, 3, 5), size=1200, step=600):
 
 
 def main():
+    from data import load_contracts, split_contracts   # only the command-line tool needs the dataset
+
     ap = argparse.ArgumentParser()
     ap.add_argument("clause")
     ap.add_argument("--split", default="dev", choices=["train", "dev", "test"])
