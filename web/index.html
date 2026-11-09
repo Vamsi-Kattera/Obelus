@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Obelus</title>
+<style>
+:root {
+  --bg: #f3f5f8; --panel: #ffffff; --ink: #1b2430; --muted: #5b6676; --line: #d5dbe4;
+  --accent: #1f4e8c; --accent-ink: #ffffff; --mark: #ffe58a; --mark-ink: #1b2430;
+  --ok: #1d6b45; --ok-bg: #e2f2e9; --none: #5b6676; --none-bg: #e8ebf0;
+  --warn-bg: #fff4d6; --warn-line: #e3c872; --err: #9b1c1c; --err-bg: #fbe5e5;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12171f; --panel: #1a212c; --ink: #e6ebf2; --muted: #9aa6b8; --line: #2c3645;
+    --accent: #7fb0ee; --accent-ink: #0d1420; --mark: #6b5a12; --mark-ink: #fff4c2;
+    --ok: #7fd1a3; --ok-bg: #173325; --none: #9aa6b8; --none-bg: #242d3a;
+    --warn-bg: #2f2812; --warn-line: #6b5a12; --err: #f2a1a1; --err-bg: #3a1c1c;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.wrap { max-width: 72rem; margin: 0 auto; padding: 1.5rem max(16px, env(safe-area-inset-left, 0px)) 3rem; }
+header h1 { margin: 0; font-size: 2rem; letter-spacing: -0.01em; display: flex; align-items: baseline; gap: .6rem; }
+header h1 .sign { color: var(--accent); font-weight: 400; }
+header p { margin: .3rem 0 0; color: var(--muted); max-width: 46rem; }
+.notice { margin: 1.25rem 0; padding: .75rem 1rem; background: var(--warn-bg); border: 1px solid var(--warn-line);
+  border-radius: 6px; font-size: .95rem; }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+@media (max-width: 52rem) { .grid { grid-template-columns: minmax(0, 1fr); } }
+section { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 1.1rem 1.2rem; min-width: 0; }
+h2 { margin: 0 0 .7rem; font-size: 1.05rem; }
+label.field { display: block; font-weight: 600; margin-bottom: .35rem; }
+textarea { width: 100%; min-height: 15rem; resize: vertical; padding: .7rem; border: 1px solid var(--line);
+  border-radius: 6px; background: var(--bg); color: var(--ink); font: .95rem/1.55 Georgia, "Times New Roman", serif; }
+.row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: .6rem 0; }
+.count { color: var(--muted); font-size: .9rem; margin-left: auto; }
+.count.over { color: var(--err); font-weight: 600; }
+button { font: inherit; cursor: pointer; border-radius: 6px; padding: .5rem .9rem; border: 1px solid var(--line);
+  background: var(--panel); color: var(--ink); }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+button:focus-visible, textarea:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+fieldset { border: 0; margin: 1rem 0 0; padding: 0; min-width: 0; }
+legend { font-weight: 600; padding: 0; margin-bottom: .35rem; }
+.opt { display: flex; gap: .55rem; align-items: baseline; padding: .15rem 0; }
+.hint { color: var(--muted); font-size: .88rem; }
+details { margin-top: .5rem; }
+summary { cursor: pointer; color: var(--muted); }
+#error { margin-top: .8rem; padding: .7rem .9rem; background: var(--err-bg); color: var(--err); border-radius: 6px; }
+.empty { color: var(--muted); }
+.result { border-top: 1px solid var(--line); padding: .8rem 0; }
+.result:first-of-type { border-top: 0; padding-top: 0; }
+.result h3 { margin: 0; font-size: 1rem; display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+.badge { font-size: .8rem; font-weight: 600; padding: .1rem .55rem; border-radius: 99px; }
+.badge.found { background: var(--ok-bg); color: var(--ok); }
+.badge.none { background: var(--none-bg); color: var(--none); }
+.result .hint { margin: .15rem 0 0; }
+blockquote { margin: .55rem 0 0; padding: .5rem .8rem; border-left: 4px solid var(--mark); background: var(--bg);
+  font: .95rem/1.55 Georgia, "Times New Roman", serif; overflow-wrap: anywhere; }
+blockquote button { display: block; margin-top: .4rem; padding: .15rem .6rem; font-size: .85rem; }
+.disclaimer { margin-top: 1rem; color: var(--muted); font-size: .88rem; }
+#doc { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 28rem; overflow: auto; padding: .8rem;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 6px; font: .95rem/1.6 Georgia, "Times New Roman", serif; }
+mark { background: var(--mark); color: var(--mark-ink); border-radius: 2px; padding: 0 1px; }
+mark.focus { outline: 2px solid var(--accent); }
+footer { margin-top: 1.5rem; color: var(--muted); font-size: .9rem; }
+footer a { color: var(--accent); }
+.sr { position: absolute; left: -9999px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="sign" aria-hidden="true">÷</span>Obelus</h1>
+    <p>Paste a contract extract and choose the clauses you want to check. Obelus returns the exact passages,
+       and every passage is checked to exist word for word in your text. If it cannot quote it, it says so.</p>
+  </header>
+
+  <div class="notice" role="note">
+    <strong>Do not paste confidential contracts.</strong> The text is sent to Google's Gemini API to be analysed.
+    Obelus does not store it. Use a sample below or a public contract.
+  </div>
+
+  <div class="grid">
+    <section aria-labelledby="in-h">
+      <h2 id="in-h">Contract text</h2>
+      <label class="field" for="text">Paste text</label>
+      <textarea id="text" spellcheck="false" placeholder="Paste a contract extract here, or load a sample."></textarea>
+      <div class="row">
+        <button type="button" id="s1">Load sample: software agreement</button>
+        <button type="button" id="s2">Load sample: services agreement</button>
+        <span class="count" id="count" aria-live="polite">0 characters</span>
+      </div>
+
+      <fieldset>
+        <legend>Clauses to find</legend>
+        <div id="measured"></div>
+        <details id="more" hidden>
+          <summary>More clauses (not measured)</summary>
+          <div id="others"></div>
+        </details>
+        <p class="hint" id="limits"></p>
+      </fieldset>
+
+      <div class="row">
+        <button type="button" class="primary" id="go">Find clauses</button>
+        <span class="hint" id="status" role="status"></span>
+      </div>
+      <div id="error" role="alert" hidden></div>
+    </section>
+
+    <section aria-labelledby="out-h">
+      <h2 id="out-h">Results</h2>
+      <div id="results"><p class="empty">Results appear here. Load a sample to try it.</p></div>
+      <div id="docwrap" hidden>
+        <h2 style="margin-top:1.2rem">Your text, highlighted</h2>
+        <div id="doc"></div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    Measured on 510 expert-labelled contracts (CUAD). Accuracy figures, tests and code:
+    <a href="https://github.com/Vamsi-Kattera/Obelus">github.com/Vamsi-Kattera/Obelus</a>.
+  </footer>
+</div>
+
+<script>
+const SAMPLES = {
+  s1: `SOFTWARE LICENCE AND SUPPORT AGREEMENT
+
+This Agreement is made between Harbourlight Software Ltd ("Supplier") and Marlow Print Group Ltd ("Customer").
+
+1. Licence. Supplier grants Customer a non-exclusive licence to use the Software for its internal business purposes during the Term.
+
+2. Fees. Customer shall pay the annual licence fee within thirty (30) days of each invoice.
+
+3. Limitation of Liability. Supplier's total aggregate liability arising out of or in connection with this Agreement, whether in contract, tort or otherwise, shall not exceed the fees paid by Customer in the twelve (12) months preceding the claim. In no event shall either party be liable for any indirect, incidental, special or consequential damages, or for loss of profits.
+
+4. Term and Termination. This Agreement continues for an initial term of three (3) years. Either party may terminate this Agreement for any reason or no reason on ninety (90) days' prior written notice to the other party.
+
+5. Audit. During the Term and for one (1) year afterwards, Supplier may, on ten (10) business days' notice and no more than once per year, audit Customer's records and systems to verify compliance with the licence terms.
+
+6. Assignment. Neither party may assign or transfer this Agreement, in whole or in part, without the prior written consent of the other party, except that Supplier may assign this Agreement to a successor in connection with a merger or sale of substantially all of its assets.
+
+7. Governing Law. This Agreement is governed by the laws of England and Wales.`,
+  s2: `CONSULTING SERVICES AGREEMENT
+
+This Agreement is made between Kestrel Facilities Ltd ("Client") and Dunmore Advisory LLP ("Consultant").
+
+1. Services. Consultant shall provide the advisory services described in each Statement of Work.
+
+2. Payment. Client shall pay undisputed invoices within forty-five (45) days of receipt.
+
+3. Confidentiality. Each party shall keep the other party's confidential information secret and use it only to perform this Agreement.
+
+4. Liability. Consultant's liability for any claim under this Agreement shall be limited to the total fees paid under the relevant Statement of Work. Neither party shall be liable for punitive or consequential damages.
+
+5. Termination. Either party may terminate this Agreement if the other commits a material breach and fails to remedy it within thirty (30) days of written notice. Client may not terminate for convenience during the first twelve (12) months.
+
+6. Assignment. Consultant may not assign this Agreement or subcontract any of the Services without Client's prior written consent.
+
+7. Governing Law. This Agreement is governed by the laws of Scotland.`
+};
+
+const $ = s => document.querySelector(s);
+let cfg = { demo: false, max_chars: 400000, max_clauses: 7 };
+let marks = [];
+
+function el(tag, props, ...kids) {
+  const n = document.createElement(tag);
+  Object.assign(n, props || {});
+  for (const k of kids) n.append(k);
+  return n;
+}
+const num = n => n.toLocaleString("en-GB");
+
+function updateCount() {
+  const n = Array.from($("#text").value).length;
+  const c = $("#count");
+  c.textContent = num(n) + " characters";
+  c.classList.toggle("over", n > cfg.max_chars);
+}
+
+function addOption(parent, name, measured, checked) {
+  const id = "c-" + name.replace(/\W+/g, "-");
+  const cb = el("input", { type: "checkbox", id, name: "clause", value: name, checked });
+  parent.append(el("div", { className: "opt" }, cb, el("label", { htmlFor: id }, name)));
+}
+
+async function init() {
+  try {
+    const [h, c] = await Promise.all([fetch("/health").then(r => r.json()), fetch("/clauses").then(r => r.json())]);
+    cfg = h;
+    c.measured.forEach((n, i) => addOption($("#measured"), n, true, i < Math.min(3, cfg.max_clauses)));
+    const others = c.supported.filter(n => !c.measured.includes(n));
+    others.forEach(n => addOption($("#others"), n, false, false));
+    $("#more").hidden = others.length === 0;
+    $("#limits").textContent = `Choose up to ${cfg.max_clauses} clauses. Up to ${num(cfg.max_chars)} characters` +
+      (cfg.demo ? " in this demo. Each visitor gets a few analyses an hour." : ".");
+  } catch (e) {
+    showError("Could not reach the Obelus service. Reload the page to try again.");
+  }
+  updateCount();
+}
+
+function showError(msg) { const e = $("#error"); e.textContent = msg; e.hidden = false; }
+function clearError() { $("#error").hidden = true; }
+
+async function run() {
+  clearError();
+  const text = $("#text").value;
+  const clauses = [...document.querySelectorAll("input[name=clause]:checked")].map(i => i.value);
+  if (!text.trim()) return showError("Paste some contract text first, or load a sample.");
+  if (Array.from(text).length > cfg.max_chars) return showError(`The text is longer than ${num(cfg.max_chars)} characters. Paste a shorter extract.`);
+  if (clauses.length === 0) return showError("Choose at least one clause to find.");
+  if (clauses.length > cfg.max_clauses) return showError(`Choose at most ${cfg.max_clauses} clauses.`);
+
+  $("#go").disabled = true;
+  $("#status").textContent = "Analysing. This usually takes a few seconds.";
+  try {
+    const r = await fetch("/analyze", { method: "POST", headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ text, clauses }) });
+    if (!r.ok) {
+      let detail = "";
+      try { detail = (await r.json()).detail; } catch (_) {}
+      if (typeof detail !== "string") detail = "";
+      const fallback = { 429: "Too many requests. Please try again later.",
+        503: "The model's daily quota is used up. Please try again tomorrow.",
+        502: "The model call failed. Please try again in a moment.",
+        413: "The text is too long. Paste a shorter extract." }[r.status] || "Something went wrong. Please try again.";
+      return showError(detail || fallback);
+    }
+    render(text, await r.json());
+  } catch (_) {
+    showError("Could not reach the service. Check your connection and try again.");
+  } finally {
+    $("#go").disabled = false;
+    $("#status").textContent = "";
+  }
+}
+
+function render(text, data) {
+  const box = $("#results");
+  box.replaceChildren();
+  const cps = Array.from(text);
+  const spans = [];
+  for (const res of data.results) {
+    const head = el("h3", {}, res.clause,
+      el("span", { className: "badge " + (res.found ? "found" : "none") }, res.found ? "Found" : "Not found"));
+    const wrap = el("div", { className: "result" }, head,
+      el("p", { className: "hint" }, res.measured ? "Accuracy for this clause was measured on CUAD." : "Accuracy for this clause was not measured."));
+    if (!res.found) wrap.append(el("p", { className: "hint" }, "No passage was found that Obelus could quote from this text."));
+    for (const p of res.passages) {
+      spans.push({ start: p.start, end: p.end, clause: res.clause });
+      const show = el("button", { type: "button" }, "Show in text");
+      show.addEventListener("click", () => focusMark(p.start));
+      wrap.append(el("blockquote", {}, p.text, show));
+    }
+    box.append(wrap);
+  }
+  box.append(el("p", { className: "disclaimer" }, data.disclaimer + " (" + num(data.elapsed_ms) + " ms)"));
+  drawDoc(cps, spans);
+}
+
+function drawDoc(cps, spans) {
+  const doc = $("#doc");
+  doc.replaceChildren();
+  marks = [];
+  const cuts = new Set([0, cps.length]);
+  spans.forEach(s => { cuts.add(Math.max(0, s.start)); cuts.add(Math.min(cps.length, s.end)); });
+  const pts = [...cuts].sort((a, b) => a - b);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1];
+    if (a === b) continue;
+    const label = [...new Set(spans.filter(s => s.start <= a && s.end >= b).map(s => s.clause))];
+    const piece = cps.slice(a, b).join("");
+    if (label.length) {
+      const m = el("mark", { title: label.join(", ") }, piece);
+      marks.push({ el: m, start: a, end: b });
+      doc.append(m);
+    } else {
+      doc.append(document.createTextNode(piece));
+    }
+  }
+  $("#docwrap").hidden = false;
+}
+
+function focusMark(start) {
+  const hit = marks.find(m => m.start <= start && start < m.end) || marks.find(m => m.start >= start);
+  if (!hit) return;
+  marks.forEach(m => m.el.classList.remove("focus"));
+  hit.el.classList.add("focus");
+  hit.el.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+
+$("#s1").addEventListener("click", () => { $("#text").value = SAMPLES.s1; updateCount(); });
+$("#s2").addEventListener("click", () => { $("#text").value = SAMPLES.s2; updateCount(); });
+$("#text").addEventListener("input", updateCount);
+$("#go").addEventListener("click", run);
+init();
+</script>
+</body>
+</html>

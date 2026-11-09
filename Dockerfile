@@ -6,8 +6,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Only the service code goes in the image: no CUAD data, no cache, no key.
-COPY src/service.py src/api.py src/extract.py src/llm.py src/chunk.py src/baseline_bm25.py src/evaluate.py ./src/
+# Only the service code and the web page go in the image: no CUAD data, no cache, no key.
+COPY src/service.py src/api.py src/limits.py src/extract.py src/llm.py src/chunk.py src/baseline_bm25.py src/evaluate.py ./src/
+COPY web ./web/
 
 RUN useradd --create-home appuser
 USER appuser
