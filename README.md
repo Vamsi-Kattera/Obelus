@@ -41,9 +41,18 @@ Measured on [CUAD](https://www.atticusprojectai.org/cuad) (510 real commercial c
 | Audit Rights | 46 / 56 | 87% → 95% | 41% → 63% |
 | Anti-Assignment | 74 / 28 | 91% → 97% | 42% → 73% |
 
-**Held-out test split:** TODO (run once, after all tuning is finished).
+**Held-out test split (102 contracts, run once after all tuning was finished).** Nothing was changed after seeing these numbers.
 
-Only Cap On Liability was tuned on dev data; the other three used descriptions written before seeing any results. Full per-method tables are in [`eval/results.md`](eval/results.md). Samples are small (36 to 74 contracts with each clause), so differences of a few points are noise. Differences of 20 points or more are not.
+| Clause | Contracts with / without | Presence F1: BM25 → Obelus | Span F1: BM25 → Obelus |
+|---|---|---|---|
+| Cap On Liability | 56 / 46 | 91% → 86% | 46% → 71% |
+| Termination For Convenience | 34 / 68 | 57% → 87% | 22% → 75% |
+| Audit Rights | 50 / 52 | 84% → 92% | 43% → 59% |
+| Anti-Assignment | 80 / 22 | 93% → 97% | 39% → 68% |
+
+The test results match the dev results: quoting the exact clause text improves span F1 on all four clauses (by 16 to 53 points). One result is worse: on Cap On Liability, presence F1 fell from 91% to 86%, because the LLM flags a liability limit in more contracts than the experts did (precision 80%). That is why the output is a highlighted passage for a human reviewer and not an automatic yes or no. The gated variant (BM25 filter before the LLM) did not beat the default on either split.
+
+Only Cap On Liability was tuned on dev data; the other three used descriptions written before seeing any results. Full per-method tables are in [`eval/results.md`](eval/results.md). Samples are small (34 to 80 contracts with each clause), so differences of a few points are noise. Differences of 20 points or more are not.
 
 ## What I learned
 
